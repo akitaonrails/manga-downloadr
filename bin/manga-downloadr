@@ -40,7 +40,6 @@ generator = MangaDownloadr::Workflow.create(options[:url], options[:name], manga
 unless generator.state?(:chapter_urls)
   puts "Massive parallel scanning of all chapters "
   generator.fetch_chapter_urls!
-  puts "\nTotal page links found: #{generator.chapter_pages_count}"
 end
 unless generator.state?(:page_urls)
   puts "\nMassive parallel scanning of all pages "
@@ -49,6 +48,7 @@ end
 unless generator.state?(:image_urls)
   puts "\nMassive parallel scanning of all images "
   generator.fetch_image_urls!
+  puts "\nTotal page links found: #{generator.chapter_pages_count}"
 end
 unless generator.state?(:images)
   puts "\nMassive parallel download of all page images "
