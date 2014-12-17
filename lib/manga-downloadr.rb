@@ -22,7 +22,7 @@ module MangaDownloadr
     def initialize(root_url, manga_name, options = {})
       self.manga_root_url    = root_url
       self.manga_root        = options[:manga_root] || "/vagrant/tmp/mangareader/"
-      self.manga_root_folder = "#{manga_root}#{manga_name}"
+      self.manga_root_folder = File.join(manga_root, manga_name)
       self.manga_name        = manga_name
 
       self.hydra_concurrency = options[:hydra_concurrency] || 100

@@ -54,8 +54,6 @@ unless generator.state?(:images)
   puts "\nMassive parallel download of all page images "
   generator.fetch_images!
 end
-unless generator.state?(:ebooks)
-  puts "\nCompiling all images into PDF volumes "
-  generator.compile_ebooks!
-end
+puts "\nCompiling all images into PDF volumes "
+generator.compile_ebooks!
 puts "\nProcess finished."
