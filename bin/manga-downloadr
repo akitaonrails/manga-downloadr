@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: manga-downloadr [options]"
+
+  opts.on("-u", "--url", "Full MangaReader.net manga homepage URL") do |v|
+    options[:url] = v
+  end
+
+  opts.on("-n", "--name", "slug to be used for the sub-folder to store all manga files") do |n|
+    options[:name] = n
+  end
+
+  opts.on("-d", "--directory", "main folder where all mangas will be stored") do |d|
+    options[:directory] = d
+  end
+end.parse!
+
+generator = MangaGenerator.create(options[:url], options[:name], manga_root: options[:directory])
+unless generator.state?(:chapter_urls)
+  puts "Massive parallel scanning of all chapters "
+  generator.fetch_chapter_urls!
+  puts "\nTotal page links found: #{generator.chapter_pages_count}"
+end
+unless generator.state?(:page_urls)
+  puts "\nMassive parallel scanning of all pages "
+  generator.fetch_page_urls!
+end
+unless generator.state?(:image_urls)
+  puts "\nMassive parallel scanning of all images "
+  generator.fetch_image_urls!
+end
+unless generator.state?(:images)
+  puts "\nMassive parallel download of all page images "
+  generator.fetch_images!
+end
+unless generator.state?(:ebooks)
+  puts "\nCompiling all images into PDF volumes "
+  generator.compile_ebooks!
+end
+puts "\nProcess finished."
