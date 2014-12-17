@@ -140,7 +140,11 @@ module MangaDownloadr
         list = download_links.slice!(0..pages_per_volume)
         Prawn::Document.generate(pdf_file, page_size: page_size) do |pdf|
           list.each do |image_file|
-            pdf.image image_file, position: :center, vposition: :center
+            begin
+              pdf.image image_file, position: :center, vposition: :center
+            rescue => e
+              puts "Error in #{image_file} - #{e}"
+            end
           end
         end
         print '.'
@@ -166,7 +170,7 @@ module MangaDownloadr
       def create(root_url, manga_name, options = {})
         dump_file_name = "/tmp/#{manga_name}.yaml"
         return YAML::load(File.read(dump_file_name)) if File.exists?(dump_file_name)
-        MangaDownloadr::Workflow.new(root_url, manga_name, options)
+        MangaGenerator.new(root_url, manga_name, options)
       end
     end
   end

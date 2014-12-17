@@ -20,6 +20,9 @@ And then execute:
 
     $ manga-downloader -n berserk -u http://www.mangareader.net/96/berserk.html -d /MyDocuments/MyMangas
 
+If there's any interruption (bad network) you can run the same command line again and it will resume from
+where it was interrupted before.
+
 ## Contributing
 
 1. Fork it ( https://github.com/akitaonrails/manga-downloadr/fork )
