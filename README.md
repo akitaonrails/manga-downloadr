@@ -18,7 +18,7 @@ gem install manga-downloadr
 
 And then execute:
 
-    $ manga-downloader berserk http://www.mangareader.net/96/berserk.html /MyDocuments/MyMangas
+    $ manga-downloader -n berserk -u http://www.mangareader.net/96/berserk.html -d /MyDocuments/MyMangas
 
 ## Contributing
 

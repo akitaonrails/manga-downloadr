@@ -3,23 +3,40 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'optparse'
 
 options = {}
-OptionParser.new do |opts|
+option_parser = OptionParser.new do |opts|
   opts.banner = "Usage: manga-downloadr [options]"
 
-  opts.on("-u", "--url", "Full MangaReader.net manga homepage URL") do |v|
+  opts.on("-u URL", "--url URL",
+    "Full MangaReader.net manga homepage URL - required") do |v|
     options[:url] = v
   end
 
-  opts.on("-n", "--name", "slug to be used for the sub-folder to store all manga files") do |n|
+  opts.on("-n NAME", "--name NAME",
+    "slug to be used for the sub-folder to store all manga files - required") do |n|
     options[:name] = n
   end
 
-  opts.on("-d", "--directory", "main folder where all mangas will be stored") do |d|
+  opts.on("-d DIRECTORY", "--directory DIRECTORY",
+    "main folder where all mangas will be stored - required") do |d|
     options[:directory] = d
   end
-end.parse!
 
-generator = MangaGenerator.create(options[:url], options[:name], manga_root: options[:directory])
+  opts.on("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end
+
+begin
+  ARGV << "-h" if ARGV.empty?
+  option_parser.parse!(ARGV)
+rescue OptionParser::ParseError
+  $stderr.print "Error: " + $! + "\n"
+  exit
+end
+
+require 'manga-downloadr'
+generator = MangaDownloadr::Workflow.create(options[:url], options[:name], manga_root: options[:directory])
 unless generator.state?(:chapter_urls)
   puts "Massive parallel scanning of all chapters "
   generator.fetch_chapter_urls!
