@@ -19,9 +19,13 @@ module MangaDownloadr
     attr_accessor :manga_title, :pages_per_volume, :page_size
     attr_accessor :processing_state
 
-    def initialize(root_url, manga_name, options = {})
+    def initialize(root_url = nil, manga_name = nil, manga_root = nil, options = {})
+      root_url or raise ArgumentError.new("URL is required")
+      manga_root or raise ArgumentError.new("Manga root folder is required")
+      manga_name or raise ArgumentError.new("Manga slug is required")
+
       self.manga_root_url    = root_url
-      self.manga_root        = options[:manga_root] || "/vagrant/tmp/mangareader/"
+      self.manga_root        = manga_root
       self.manga_root_folder = File.join(manga_root, manga_name)
       self.manga_name        = manga_name
 

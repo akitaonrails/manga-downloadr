@@ -23,6 +23,8 @@ And then execute:
 If there's any interruption (bad network) you can run the same command line again and it will resume from
 where it was interrupted before.
 
+If you want to restart from scratch, delete the "/tmp/[your manga].yml" that saves the current workflow state.
+
 ## Contributing
 
 1. Fork it ( https://github.com/akitaonrails/manga-downloadr/fork )
@@ -30,3 +32,8 @@ where it was interrupted before.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## TODO
+
+* Move MangaReader specifics to a different class
+* Add support for MangaFox and other manga sites

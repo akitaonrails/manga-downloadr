@@ -19,6 +19,10 @@ Gem::Specification.new do |gem|
   gem.add_dependency('prawn', '~> 1.3')
   gem.add_dependency('fastimage', '~> 1.6')
 
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'webmock'
+
   # ensure the gem is built out of versioned files
   gem.files = Dir['Rakefile', '{bin,lib}/**/*', 'README*', 'LICENSE*'] & `git ls-files -z`.split("\0")
 
