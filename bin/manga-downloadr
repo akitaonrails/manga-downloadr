@@ -36,7 +36,7 @@ rescue OptionParser::ParseError
 end
 
 require 'manga-downloadr'
-generator = MangaDownloadr::Workflow.create(options[:url], options[:name], manga_root: options[:directory])
+generator = MangaDownloadr::Workflow.create(options[:url], options[:name], options[:directory])
 unless generator.state?(:chapter_urls)
   puts "Massive parallel scanning of all chapters "
   generator.fetch_chapter_urls!

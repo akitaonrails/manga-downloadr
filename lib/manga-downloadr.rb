@@ -171,10 +171,10 @@ module MangaDownloadr
         File.open("/tmp/#{obj.manga_name}.yaml", 'w') {|f| f.write(YAML::dump(obj)) }
       end
 
-      def create(root_url, manga_name, options = {})
+      def create(root_url, manga_name, manga_root, options = {})
         dump_file_name = "/tmp/#{manga_name}.yaml"
         return YAML::load(File.read(dump_file_name)) if File.exists?(dump_file_name)
-        MangaDownloadr::Workflow.new(root_url, manga_name, options)
+        MangaDownloadr::Workflow.new(root_url, manga_name, manga_root, options)
       end
     end
   end
