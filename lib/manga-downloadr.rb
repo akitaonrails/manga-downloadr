@@ -10,6 +10,14 @@ require 'fastimage'
 require 'open-uri'
 require 'yaml'
 
+if ENV['RUBY_ENV'].nil?
+  require 'retryable_typhoeus'
+  Typhoeus::Request.send(:include, RetryableTyphoeus::RequestExtension)
+  Typhoeus::Hydra.send(:include, RetryableTyphoeus::HydraExtension)
+else
+  Typhoeus::Hydra.send(:alias_method, :queue_with_retry, :queue)
+end
+
 module MangaDownloadr
   ImageData = Struct.new(:folder, :filename, :url)
 
@@ -18,6 +26,7 @@ module MangaDownloadr
     attr_accessor :chapter_list, :chapter_pages, :chapter_images, :download_links, :chapter_pages_count
     attr_accessor :manga_title, :pages_per_volume, :page_size
     attr_accessor :processing_state
+    attr_accessor :fetch_page_urls_errors, :fetch_image_urls_errors, :fetch_images_errors
 
     def initialize(root_url = nil, manga_name = nil, manga_root = nil, options = {})
       root_url or raise ArgumentError.new("URL is required")
@@ -37,7 +46,10 @@ module MangaDownloadr
       self.pages_per_volume = options[:pages_per_volume] || 250
       self.page_size        = options[:page_size] || [600, 800]
 
-      self.processing_state = []
+      self.processing_state        = []
+      self.fetch_page_urls_errors  = []
+      self.fetch_image_urls_errors = []
+      self.fetch_images_errors     = []
     end
 
     def fetch_chapter_urls!
@@ -55,17 +67,26 @@ module MangaDownloadr
         begin
           request = Typhoeus::Request.new "http://www.mangareader.net#{chapter_link}"
           request.on_complete do |response|
-            chapter_doc = Nokogiri::HTML(response.body)
-            pages = chapter_doc.css('#selectpage #pageMenu option')
-            chapter_pages.merge!(chapter_link => pages.map { |p| p['value'] })
-            print '.'
+            begin
+              chapter_doc = Nokogiri::HTML(response.body)
+              pages = chapter_doc.css('#selectpage #pageMenu option')
+              chapter_pages.merge!(chapter_link => pages.map { |p| p['value'] })
+              print '.'
+            rescue => e
+              self.fetch_page_urls_errors << { url: chapter_link, error: e, body: response.body }
+              print 'x'
+            end
           end
-          hydra.queue request
+          hydra.queue_with_retry request
         rescue => e
           puts e
         end
       end
       hydra.run
+      unless fetch_page_urls_errors.empty?
+        puts "\n Errors fetching page urls:"
+        puts fetch_page_urls_errors
+      end
 
       self.chapter_pages_count = chapter_pages.values.inject(0) { |total, list| total += list.size }
       current_state :page_urls
@@ -78,22 +99,31 @@ module MangaDownloadr
           begin
             request = Typhoeus::Request.new "http://www.mangareader.net#{page_link}"
             request.on_complete do |response|
-              chapter_doc = Nokogiri::HTML(response.body)
-              image       = chapter_doc.css('#img').first
-              tokens      = image['alt'].match("^(.*?)\s\-\s(.*?)$")
-              extension   = File.extname(URI.parse(image['src']).path)
+              begin
+                chapter_doc = Nokogiri::HTML(response.body)
+                image       = chapter_doc.css('#img').first
+                tokens      = image['alt'].match("^(.*?)\s\-\s(.*?)$")
+                extension   = File.extname(URI.parse(image['src']).path)
 
-              chapter_images.merge!(chapter_key => []) if chapter_images[chapter_key].nil?
-              chapter_images[chapter_key] << ImageData.new( tokens[1], "#{tokens[2]}#{extension}", image['src'] )
-              print '.'
+                chapter_images.merge!(chapter_key => []) if chapter_images[chapter_key].nil?
+                chapter_images[chapter_key] << ImageData.new( tokens[1], "#{tokens[2]}#{extension}", image['src'] )
+                print '.'
+              rescue => e
+                self.fetch_image_urls_errors << { url: page_link, error: e }
+                print 'x'
+              end
             end
-            hydra.queue request
+            hydra.queue_with_retry request
           rescue => e
             puts e
           end
         end
       end
       hydra.run
+      unless fetch_image_urls_errors.empty?
+        puts "\nErrors fetching image urls:"
+        puts fetch_image_urls_errors
+      end
 
       current_state :image_urls
     end
@@ -102,30 +132,35 @@ module MangaDownloadr
       hydra = Typhoeus::Hydra.new(max_concurrency: hydra_concurrency)
       chapter_list.each_with_index do |chapter_key, chapter_index|
         chapter_images[chapter_key].each do |file|
-          begin
             downloaded_filename = File.join(manga_root_folder, file.folder, file.filename)
             next if File.exists?(downloaded_filename) # effectively resumes the download list without re-downloading everything
             request = Typhoeus::Request.new file.url
             request.on_complete do |response|
-              # download
-              FileUtils.mkdir_p(File.join(manga_root_folder, file.folder))
-              File.open(downloaded_filename, "wb+") { |f| f.write response.body }
+              begin
+                # download
+                FileUtils.mkdir_p(File.join(manga_root_folder, file.folder))
+                File.open(downloaded_filename, "wb+") { |f| f.write response.body }
 
-              # resize
-              image = Magick::Image.read( downloaded_filename ).first
-              resized = image.resize_to_fit(600, 800)
-              resized.write( downloaded_filename ) { self.quality = 50 }
+                # resize
+                image = Magick::Image.read( downloaded_filename ).first
+                resized = image.resize_to_fit(600, 800)
+                resized.write( downloaded_filename ) { self.quality = 50 }
 
-              print '.'
-              GC.start # to avoid a leak too big (ImageMagick is notorious for that, specially on resizes)
+                print '.'
+                GC.start # to avoid a leak too big (ImageMagick is notorious for that, specially on resizes)
+              rescue => e
+                self.fetch_images_errors << { url: file.url, error: e }
+                print '.'
+              end
             end
-            hydra.queue request
-          rescue => e
-            puts e
-          end
+          hydra.queue_with_retry request
         end
       end
       hydra.run
+      unless fetch_images_errors.empty?
+        puts "\nErrors downloading images:"
+        puts fetch_images_errors
+      end
 
       current_state :images
     end
