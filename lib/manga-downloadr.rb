@@ -10,13 +10,14 @@ require 'fastimage'
 require 'open-uri'
 require 'yaml'
 
-if ENV['RUBY_ENV'].nil?
-  require 'retryable_typhoeus'
-  Typhoeus::Request.send(:include, RetryableTyphoeus::RequestExtension)
-  Typhoeus::Hydra.send(:include, RetryableTyphoeus::HydraExtension)
-else
-  Typhoeus::Hydra.send(:alias_method, :queue_with_retry, :queue)
-end
+# Seems like retryability is unstable at this point, commenting out
+# if ENV['RUBY_ENV'].nil?
+#   require 'retryable_typhoeus'
+#   Typhoeus::Request.send(:include, RetryableTyphoeus::RequestExtension)
+#   Typhoeus::Hydra.send(:include, RetryableTyphoeus::HydraExtension)
+# else
+#   Typhoeus::Hydra.send(:alias_method, :queue_with_retry, :queue)
+# end
 
 module MangaDownloadr
   ImageData = Struct.new(:folder, :filename, :url)
@@ -69,15 +70,17 @@ module MangaDownloadr
           request.on_complete do |response|
             begin
               chapter_doc = Nokogiri::HTML(response.body)
-              pages = chapter_doc.css('#selectpage #pageMenu option')
+              # pages = chapter_doc.css('#selectpage #pageMenu option')
+              pages = chapter_doc.xpath("//div[@id='selectpage']//select[@id='pageMenu']//option")
               chapter_pages.merge!(chapter_link => pages.map { |p| p['value'] })
-              print '.'
+              puts chapter_link
+              # print '.'
             rescue => e
               self.fetch_page_urls_errors << { url: chapter_link, error: e, body: response.body }
               print 'x'
             end
           end
-          hydra.queue_with_retry request
+          hydra.queue request
         rescue => e
           puts e
         end
@@ -113,7 +116,7 @@ module MangaDownloadr
                 print 'x'
               end
             end
-            hydra.queue_with_retry request
+            hydra.queue request
           rescue => e
             puts e
           end
@@ -153,7 +156,7 @@ module MangaDownloadr
                 print '.'
               end
             end
-          hydra.queue_with_retry request
+          hydra.queue request
         end
       end
       hydra.run
