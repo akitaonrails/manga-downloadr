@@ -9,7 +9,7 @@ require 'prawn'
 require 'fastimage'
 require 'open-uri'
 require 'yaml'
-require 'site-suport'
+require 'site-support/site_support'
 
 # Seems like retryability is unstable at this point, commenting out
 # if ENV['RUBY_ENV'].nil?
@@ -55,7 +55,7 @@ module MangaDownloadr
       self.fetch_images_errors     = []
 
       # factory for manga site
-      self.site = SiteSuport::SiteSuportFactory.factory root_url
+      self.site = SiteSupport::SiteSupportFactory.factory root_url
     end
 
     def fetch_chapter_urls!
