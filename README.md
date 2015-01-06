@@ -1,5 +1,6 @@
 # Manga Downloadr
 
+[![Build Status](https://travis-ci.org/akitaonrails/manga-downloadr.svg)](https://travis-ci.org/akitaonrails/manga-downloadr)
 [![Code Climate](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/gpa.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
 [![Test Coverage](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/coverage.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
 
