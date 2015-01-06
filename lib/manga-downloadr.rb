@@ -9,6 +9,7 @@ require 'prawn'
 require 'fastimage'
 require 'open-uri'
 require 'yaml'
+require 'site-suport'
 
 # Seems like retryability is unstable at this point, commenting out
 # if ENV['RUBY_ENV'].nil?
@@ -28,6 +29,7 @@ module MangaDownloadr
     attr_accessor :manga_title, :pages_per_volume, :page_size
     attr_accessor :processing_state
     attr_accessor :fetch_page_urls_errors, :fetch_image_urls_errors, :fetch_images_errors
+    attr_accessor :site
 
     def initialize(root_url = nil, manga_name = nil, manga_root = nil, options = {})
       root_url or raise ArgumentError.new("URL is required")
@@ -51,13 +53,16 @@ module MangaDownloadr
       self.fetch_page_urls_errors  = []
       self.fetch_image_urls_errors = []
       self.fetch_images_errors     = []
+
+      # factory for manga site
+      self.site = SiteSuport::SiteSuportFactory.factory root_url
     end
 
     def fetch_chapter_urls!
       doc = Nokogiri::HTML(open(manga_root_url))
 
-      self.chapter_list = doc.css("#listing a").map { |l| l['href']}
-      self.manga_title  = doc.css("#mangaproperties h1").first.text
+      self.chapter_list = doc.css(site.chapter_list).map { |l| site.chapter_list_parse(l['href']) }
+      self.manga_title  = doc.css(site.manga_title).first.text
 
       current_state :chapter_urls
     end
@@ -66,13 +71,13 @@ module MangaDownloadr
       hydra = Typhoeus::Hydra.new(max_concurrency: hydra_concurrency)
       chapter_list.each do |chapter_link|
         begin
-          request = Typhoeus::Request.new "http://www.mangareader.net#{chapter_link}"
+          request = Typhoeus::Request.new "#{chapter_link}"
           request.on_complete do |response|
             begin
               chapter_doc = Nokogiri::HTML(response.body)
-              # pages = chapter_doc.css('#selectpage #pageMenu option')
-              pages = chapter_doc.xpath("//div[@id='selectpage']//select[@id='pageMenu']//option")
-              chapter_pages.merge!(chapter_link => pages.map { |p| p['value'] })
+              pages = chapter_doc.css(site.page_list)
+              # pages = chapter_doc.xpath("//div[@id='selectpage']//select[@id='pageMenu']//option")
+              chapter_pages.merge!(chapter_link => pages.map { |p| site.page_list_parse(p['value']) })
               puts chapter_link
               # print '.'
             rescue => e
@@ -100,12 +105,13 @@ module MangaDownloadr
       chapter_list.each do |chapter_key|
         chapter_pages[chapter_key].each do |page_link|
           begin
-            request = Typhoeus::Request.new "http://www.mangareader.net#{page_link}"
+            request = Typhoeus::Request.new "#{page_link}"
             request.on_complete do |response|
               begin
                 chapter_doc = Nokogiri::HTML(response.body)
-                image       = chapter_doc.css('#img').first
-                tokens      = image['alt'].match("^(.*?)\s\-\s(.*?)$")
+                image       = chapter_doc.css(site.image).first
+                next        if image.nil?
+                tokens      = site.image_alt(image['alt'])
                 extension   = File.extname(URI.parse(image['src']).path)
 
                 chapter_images.merge!(chapter_key => []) if chapter_images[chapter_key].nil?
