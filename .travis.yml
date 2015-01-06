@@ -1,11 +1,13 @@
 language: ruby
 cache: bundler
-bundler_args: --without development production
 rvm:
   - 2.1.5
 script:
-  - xvfb-run bundle exec rspec
+  - xvfb-run bundle exec rake spec
 notifications:
   email:
     recipients:
       - boss@akitaonrails.com
+addons:
+  code_climate:
+    repo_token: 757279d52dcd9ae779e591d9cbc60273d6a903962015fdb7b50c8eec85c9204f

@@ -1,5 +1,8 @@
 # Manga Downloadr
 
+[![Code Climate](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/gpa.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
+[![Test Coverage](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/coverage.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
+
 I just bought a new Kindle Paperwhite and so happens it's the perfect form factor
 to read good old, black and white, mangas.
 
