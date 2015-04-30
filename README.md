@@ -12,7 +12,20 @@ optimize and compile them into PDF files that fit the Kindle resolution.
 
 ## Installation
 
-Just install with:
+Setup your environment with:
+
+```
+sudo apt-get install -y \
+    libgraphicsmagick1-dev \
+    libmagickcore-dev \
+    libmagickwand-dev \
+    ruby-dev \
+    zlib1g-dev
+
+sudo gem install bundler
+```
+
+And install manga-downloadr with:
 
 ```
 gem install manga-downloadr
