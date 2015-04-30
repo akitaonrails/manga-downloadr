@@ -199,7 +199,8 @@ module MangaDownloadr
       self.processing_state.include?(state)
     end
 
-    private def current_state(state)
+    private
+    def current_state(state)
       self.processing_state << state
       MangaDownloadr::Workflow.serialize(self)
     end
