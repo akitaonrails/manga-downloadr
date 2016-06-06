@@ -1,27 +1,42 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-require 'optparse'
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
+require "optparse"
+require "manga-downloadr"
 
-options = {}
+opt_manga_directory  = "/tmp"
+opt_manga_root_uri   = ""
+opt_batch_size       = 50
+opt_resize_format    = "600x800"
+opt_pages_per_volume = 250
+
 option_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: manga-downloadr [options]"
+  # Set a banner, displayed at the top
+  # of the help screen.
+  opts.banner = "Scraps all the images from all pages of a MangaReader.net manga"
 
-  opts.on("-u URL", "--url URL",
-    "Full MangaReader.net manga homepage URL - required") do |v|
-    options[:url] = v
+  opts.on( "-d DIRECTORY", "--d DIRECTORY", "the directory path where to save the manga" ) do |directory|
+    opt_manga_directory = directory
   end
 
-  opts.on("-n NAME", "--name NAME",
-    "slug to be used for the sub-folder to store all manga files - required") do |n|
-    options[:name] = n
+  opts.on( "-u URL", "--url URL", "the MangaReader full URI to the chapters index of the manga" ) do |url|
+    opt_manga_root_uri = url
   end
 
-  opts.on("-d DIRECTORY", "--directory DIRECTORY",
-    "main folder where all mangas will be stored - required") do |d|
-    options[:directory] = d
+  opts.on( "-b BATCH_SIZE", "-batch 50", "the amount of concurrent HTTP fetches to the MangaReader site, don't overdo it") do |batch|
+    opt_batch_size = batch.to_i
   end
 
-  opts.on("-h", "--help", "Show this message") do
+  opts.on( "-r FORMAT", "--resize 600x800", "the current Kindle format is 600x800 but you can change it") do |format|
+    opt_resize_format = format
+  end
+
+  opts.on( "-v PAGES", "--volume 250", "how many pages should each PDF volume have") do |volume|
+    opt_pages_per_volume = volume.to_i
+  end
+
+  # This displays the help screen, all programs are
+  # assumed to have this option.
+  opts.on( "-h", "--help", "Display this screen" ) do
     puts opts
     exit
   end
@@ -35,25 +50,8 @@ rescue OptionParser::ParseError
   exit
 end
 
-require 'manga-downloadr'
-generator = MangaDownloadr::Workflow.create(options[:url], options[:name], options[:directory])
-unless generator.state?(:chapter_urls)
-  puts "Massive parallel scanning of all chapters "
-  generator.fetch_chapter_urls!
+if opt_manga_root_uri.size > 0
+  root_uri = URI.parse(opt_manga_root_uri)
+  config = MangaDownloadr::Config.new(root_uri.host, root_uri.path, opt_manga_directory, opt_batch_size, opt_resize_format, opt_pages_per_volume)
+  MangaDownloadr::Workflow.run(config)
 end
-unless generator.state?(:page_urls)
-  puts "\nMassive parallel scanning of all pages "
-  generator.fetch_page_urls!
-end
-unless generator.state?(:image_urls)
-  puts "\nMassive parallel scanning of all images "
-  generator.fetch_image_urls!
-  puts "\nTotal page links found: #{generator.chapter_pages_count}"
-end
-unless generator.state?(:images)
-  puts "\nMassive parallel download of all page images "
-  generator.fetch_images!
-end
-puts "\nCompiling all images into PDF volumes "
-generator.compile_ebooks!
-puts "\nProcess finished."

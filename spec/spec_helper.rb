@@ -1,4 +1,5 @@
-ENV['RUBY_ENV'] = 'test'
-require 'manga-downloadr'
-require 'webmock/rspec'
-require 'fileutils'
+ENV["RUBY_ENV"] = "test"
+require "manga-downloadr"
+require "webmock/rspec"
+require "fileutils"
+require "pry"

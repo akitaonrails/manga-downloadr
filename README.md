@@ -4,43 +4,46 @@
 [![Code Climate](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/gpa.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
 [![Test Coverage](https://codeclimate.com/repos/54ac0c066956802e06000ffb/badges/441f1f6af106cc32b2b5/coverage.svg)](https://codeclimate.com/repos/54ac0c066956802e06000ffb/feed)
 
-I just bought a new Kindle Paperwhite and so happens it's the perfect form factor
-to read good old, black and white, mangas.
+I just bought a new Kindle Paperwhite and so happens it's the perfect form factor to read good old, black and white, mangas.
 
-So I decided to automate the process of fetching manga images from MangaReader.net,
-optimize and compile them into PDF files that fit the Kindle resolution.
+So I decided to automate the process of fetching manga images from MangaReader.net, optimize and compile them into PDF files that fit the Kindle resolution.
 
 ## Installation
 
 Setup your environment with:
 
-```
-sudo apt-get install -y \
-    libgraphicsmagick1-dev \
-    libmagickcore-dev \
-    libmagickwand-dev \
-    ruby-dev \
-    zlib1g-dev
-
-sudo gem install bundler
-```
+    sudo apt-get install imagemagick
+    sudo gem install bundler
 
 And install manga-downloadr with:
 
-```
-gem install manga-downloadr
-```
+    gem install manga-downloadr
 
 ## Usage
 
 And then execute:
 
-    $ manga-downloadr -n berserk -u http://www.mangareader.net/96/berserk.html -d /MyDocuments/MyMangas
+    $ manga-downloadr -u http://www.mangareader.net/onepunch-man -d /tmp/onepunch-man
 
-If there's any interruption (bad network) you can run the same command line again and it will resume from
-where it was interrupted before.
+In this example, all the pages of the "One Punch Man" will be downloaded to the directory "/tmp/onepunch-man" and they will have the following filename format:
 
-If you want to restart from scratch, delete the "/tmp/[your manga].yml" that saves the current workflow state.
+    /tmp/onepunch-man/Onepunch-Man-Chap-00038-Pg-00011.jpg
+
+## Development
+
+Tests are in Rspec:
+
+    bundle exec rspec
+
+Version 2.0 is a complete rewrite, following what was learned writing my [Elixir version](https://github.com/akitaonrails/ex_manga_downloadr).
+
+This is basically a port of the [Crystal version](https://github.com/akitaonrails/cr_manga_downloadr).
+
+Elixir has superb parallelism and concurrency through Erlang's OTP architecture so it's easy to process hundreds of parallel requests, limited only to what MangaReader can respond.
+
+Crystal is also super fast (because its compiled to native code) and has very good concurrency (through the use of Go-like CSP channels).
+
+This Ruby version uses native Threads. Because this is I/O intensive, we assume we can run several HTTP requests concurrently. But because Threads have significantly more overhead than Elixir or Crystal architectures, we will be limited by Ruby's MRI interpreter.
 
 ## Contributing
 
@@ -52,5 +55,6 @@ If you want to restart from scratch, delete the "/tmp/[your manga].yml" that sav
 
 ## TODO
 
+* Version 2.0 removes the crash-recovery (saving state) from Version 1.0 - could be reimplemented
 * Move MangaReader specifics to a different class
 * Add support for MangaFox and other manga sites
