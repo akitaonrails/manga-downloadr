@@ -6,7 +6,7 @@ module MangaDownloadr
     end
 
     def get(uri, &block)
-      response = @http_client.get(uri)
+      response = @http_client.get(uri, { "User-Agent": USER_AGENT })
       case response.code
       when "301"
         get response.headers["Location"], &block
