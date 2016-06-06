@@ -1,9 +1,9 @@
 language: ruby
 cache: bundler
 rvm:
-  - 2.1.5
+  - 2.3.1
 script:
-  - xvfb-run bundle exec rake spec
+  - xvfb-run bundle exec rspec
 notifications:
   email:
     recipients:
