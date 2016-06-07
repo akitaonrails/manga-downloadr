@@ -1,27 +1,29 @@
+require "thread/pool"
+
 module MangaDownloadr
   class Concurrency
     def initialize(engine_klass = nil, config = Config.new, turn_on_engine = true)
-      @engine_klass = engine_klass
-      @config = config
+      @engine_klass   = engine_klass
+      @config         = config
       @turn_on_engine = turn_on_engine
     end
 
     def fetch(collection, &block)
+      pool    = Thread.pool(@config.download_batch_size)
+      mutex   = Mutex.new
       results = []
-      collection&.each_slice(@config.download_batch_size) do |batch|
-        mutex   = Mutex.new
-        threads = batch.map do |item|
-          Thread.new {
-            engine  = @turn_on_engine ? @engine_klass.new(@config.domain) : nil
-            Thread.current["results"] = block.call(item, engine)&.flatten
-            mutex.synchronize do
-              results += ( Thread.current["results"] || [] )
-            end
-          }
-        end
-        threads.each(&:join)
-        puts "Processed so far: #{results&.size}"
+
+      collection.each do |item|
+        pool.process {
+          engine  = @turn_on_engine ? @engine_klass.new(@config.domain) : nil
+          reply = block.call(item, engine)&.flatten
+          mutex.synchronize do
+            results += ( reply || [] )
+          end
+        }
       end
+      pool.shutdown
+
       results
     end
 
