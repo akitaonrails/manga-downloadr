@@ -29,6 +29,10 @@ In this example, all the pages of the "One Punch Man" will be downloaded to the 
 
     /tmp/onepunch-man/Onepunch-Man-Chap-00038-Pg-00011.jpg
 
+You can turn on HTTP cache to be able to resume an interrupted process later if you want:
+
+    $ manga-downloadr -u http://www.mangareader.net/onepunch-man -d /tmp/onepunch-man --cache
+
 ## Development
 
 Tests are in Rspec:
@@ -44,6 +48,16 @@ Elixir has superb parallelism and concurrency through Erlang's OTP architecture 
 Crystal is also super fast (because its compiled to native code) and has very good concurrency (through the use of Go-like CSP channels).
 
 This Ruby version uses native Threads. Because this is I/O intensive, we assume we can run several HTTP requests concurrently. But because Threads have significantly more overhead than Elixir or Crystal architectures, we will be limited by Ruby's MRI interpreter.
+
+There is not a test mode you can use for benchmark purposes:
+
+    time bin/manga-downloadr --test
+    # or in JRuby:
+    # time jruby --dev -S bin/manga-downloadr --test
+
+This will use One-Punch Man as a test sample and you can also turn on the cache to not have external I/O interference
+
+    time bin/manga-downloadr --test --cache
 
 ## Contributing
 

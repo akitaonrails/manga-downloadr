@@ -2,12 +2,15 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "optparse"
 require "manga-downloadr"
+require "benchmark"
 
 opt_manga_directory  = "/tmp"
 opt_manga_root_uri   = ""
 opt_batch_size       = 50
 opt_resize_format    = "600x800"
 opt_pages_per_volume = 250
+opt_run_tests = false
+opt_cache_pages = false
 
 option_parser = OptionParser.new do |opts|
   # Set a banner, displayed at the top
@@ -34,6 +37,16 @@ option_parser = OptionParser.new do |opts|
     opt_pages_per_volume = volume.to_i
   end
 
+  opts.on( "-c", "--cache", "turn on the HTTP cache so you can resume a process if you needed to stop before ending") do |_|
+    opt_cache_pages = true
+  end
+
+  opts.on( "-t", "--test", "run a simulation to one-punch man manga") do |_|
+    opt_manga_root_uri = "http://www.mangareader.net/onepunch-man"
+    opt_manga_directory = "/tmp/cr-one-punch"
+    opt_run_tests = true
+  end
+
   # This displays the help screen, all programs are
   # assumed to have this option.
   opts.on( "-h", "--help", "Display this screen" ) do
@@ -52,6 +65,12 @@ end
 
 if opt_manga_root_uri.size > 0
   root_uri = URI.parse(opt_manga_root_uri)
-  config = MangaDownloadr::Config.new(root_uri.host, root_uri.path, opt_manga_directory, opt_batch_size, opt_resize_format, opt_pages_per_volume)
-  MangaDownloadr::Workflow.run(config)
+  config = MangaDownloadr::Config.new(root_uri.host, root_uri.path, opt_manga_directory, opt_batch_size, opt_resize_format, opt_pages_per_volume, opt_cache_pages)
+  if opt_run_tests
+    puts Benchmark.measure("One-Punch Man test - MRI Ruby version") {
+      MangaDownloadr::Workflow.run_tests(config)
+    }
+  else
+    MangaDownloadr::Workflow.run(config)
+  end
 end

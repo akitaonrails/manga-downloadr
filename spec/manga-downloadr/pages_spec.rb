@@ -5,7 +5,7 @@ describe MangaDownloadr::Pages do
     stub_request(:get, "www.mangareader.net/naruto/1").
       to_return(status: 200, body: File.read("spec/fixtures/naruto_1.html"))
 
-    pages = MangaDownloadr::Pages.new("www.mangareader.net").fetch("/naruto/1")
+    pages = MangaDownloadr::Pages.new("www.mangareader.net", false).fetch("/naruto/1")
 
     expect(pages&.size).to eq(53)
     expect(pages&.first).to eq("/naruto/1/1")

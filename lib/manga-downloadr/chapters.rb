@@ -1,8 +1,8 @@
 module MangaDownloadr
   class Chapters < DownloadrClient
-    def initialize(domain, root_uri)
+    def initialize(domain, root_uri, cache_http)
       @root_uri = root_uri
-      super(domain)
+      super(domain, cache_http)
     end
 
     def fetch

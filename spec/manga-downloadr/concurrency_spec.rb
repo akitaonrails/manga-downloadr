@@ -2,7 +2,7 @@ require "spec_helper"
 require "benchmark"
 
 describe MangaDownloadr::Concurrency do
-  let(:config) { MangaDownloadr::Config.new("www.mangareader.net", "/", "/tmp", 10, "", 10) }
+  let(:config) { MangaDownloadr::Config.new("www.mangareader.net", "/", "/tmp", 10, "", 10, false) }
 
   it "should process a large queue of jobs in batches, concurrently and signal through a channel" do
     reactor = MangaDownloadr::Concurrency.new(MangaDownloadr::Pages, config, false)
@@ -31,8 +31,8 @@ describe MangaDownloadr::Concurrency do
 
       /\((.*?)\)$/.match(concurrent_measurement.to_s) do |cm|
         /\((.*?)\)/.match(sequential_measurement.to_s) do |sm|
-          # expected for the concurrent version to be close to 10 times faster than sequential
-          expect(sm[1].to_f).to be > ( cm[1].to_f * 9 )
+          # expected for the concurrent version to be close to at least 7 to 10 times faster than sequential
+          expect(sm[1].to_f).to be > ( cm[1].to_f * 7 )
         end
       end
     ensure

@@ -15,9 +15,21 @@ module MangaDownloadr
       puts "Done!"
     end
 
+    def self.run_tests(config = Config.new)
+      FileUtils.mkdir_p "/tmp/manga-downloadr-cache"
+
+      CM(Workflow, config)
+        .fetch_chapters
+        .fetch_pages(config)
+        .fetch_images(config)
+        .unwrap
+
+      puts "Done!"
+    end
+
     def self.fetch_chapters(config)
       puts "Fetching chapters ..."
-      chapters = Chapters.new(config.domain, config.root_uri).fetch
+      chapters = Chapters.new(config.domain, config.root_uri, config.cache_http).fetch
       puts "Number of Chapters: #{chapters&.size}"
       chapters
     end

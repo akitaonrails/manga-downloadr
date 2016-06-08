@@ -15,7 +15,7 @@ module MangaDownloadr
 
       collection.each do |item|
         pool.process {
-          engine  = @turn_on_engine ? @engine_klass.new(@config.domain) : nil
+          engine  = @turn_on_engine ? @engine_klass.new(@config.domain, @config.cache_http) : nil
           reply = block.call(item, engine)&.flatten
           mutex.synchronize do
             results += ( reply || [] )
@@ -33,7 +33,7 @@ module MangaDownloadr
     # it's not to be used in the application, just to be used as a baseline for benchmark
     def fetch_sequential(collection, &block)
       results = []
-      engine  = @turn_on_engine ? @engine_klass.new(@config.domain) : nil
+      engine  = @turn_on_engine ? @engine_klass.new(@config.domain, @config.cache_http) : nil
       collection&.each_slice(@config.download_batch_size) do |batch|
         batch.each do |item|
           batch_results = block.call(item, engine)&.flatten
