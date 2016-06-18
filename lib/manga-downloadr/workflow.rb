@@ -3,7 +3,7 @@ module MangaDownloadr
     def self.run(config = Config.new)
       FileUtils.mkdir_p config.download_directory
 
-      CM(Workflow, config)
+      CM(config, Workflow)
         .fetch_chapters
         .fetch_pages(config)
         .fetch_images(config)
