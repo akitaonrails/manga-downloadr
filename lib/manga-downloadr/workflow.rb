@@ -43,7 +43,7 @@ module MangaDownloadr
     end
 
     def self.fetch_images(pages, config)
-      puts "Feching the Image URLs from each Page ..."
+      puts "Fetching the Image URLs from each Page ..."
       reactor = Concurrency.new(PageImage, config)
       reactor.fetch(pages) do |link, engine|
         [ engine&.fetch(link) ]
@@ -55,8 +55,9 @@ module MangaDownloadr
       reactor = Concurrency.new(ImageDownloader, config, false)
       reactor.fetch(images) do |image, _|
         image_file = File.join(config.download_directory, image.filename)
-        unless File.exists?(image_file)
-          ImageDownloader.new(image.host).fetch(image.path, image_file)
+        if !File.exists?(image_file)
+          ImageDownloader.new(image.host, config.cache_http).
+            fetch(URI.join("http://#{image.host}", image.path), image_file)
         end
         [ image_file ]
       end
@@ -73,15 +74,15 @@ module MangaDownloadr
       index = 1
       volumes = []
       downloads.each_slice(config.pages_per_volume) do |batch|
-        volume_directory = "#{config.download_directory}/#{manga_name}_#{index}"
+        volume_directory = File.join(config.download_directory, "#{manga_name}_#{index}").gsub(" ", '\ ')
         volume_file      = "#{volume_directory}.pdf"
         volumes << volume_file
         FileUtils.mkdir_p volume_directory
 
         puts "Moving images to #{volume_directory} ..."
         batch.each do |file|
-          destination_file = file.split("/").last
-          `mv #{file} #{volume_directory}/#{destination_file}`
+          destination_file = file.split("/").last.gsub(" ", '\ ')
+          `mv #{file.gsub(" ", '\ ')} #{volume_directory}/#{destination_file}`
         end
 
         puts "Generating #{volume_file} ..."
