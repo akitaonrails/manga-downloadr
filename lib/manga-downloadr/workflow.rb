@@ -18,10 +18,11 @@ module MangaDownloadr
     def self.run_tests(config = Config.new)
       FileUtils.mkdir_p "/tmp/manga-downloadr-cache"
 
-      CM(Workflow, config)
+      CM(config, Workflow)
         .fetch_chapters
         .fetch_pages(config)
         .fetch_images(config)
+        .download_images(config)
         .unwrap
 
       puts "Done!"
