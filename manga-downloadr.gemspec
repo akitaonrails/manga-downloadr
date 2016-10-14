@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.homepage = 'http://github.com/akitaonrails/manga-downloadr'
 
   gem.add_dependency('nokogiri', '~> 1.6')
-  gem.add_dependency('typhoeus', '~> 0.6')
+  gem.add_dependency('typhoeus', '~> 1.1')
   gem.add_dependency('rmagick', '~> 2.13')
   gem.add_dependency('prawn', '~> 1.3')
   gem.add_dependency('fastimage', '~> 1.6')

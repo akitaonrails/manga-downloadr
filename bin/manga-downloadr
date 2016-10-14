@@ -2,9 +2,16 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'optparse'
 
-options = {}
+options = { test: false }
 option_parser = OptionParser.new do |opts|
   opts.banner = "Usage: manga-downloadr [options]"
+
+  opts.on("-t", "--test", "Test routine") do |t|
+    options[:url] = "http://www.mangareader.net/onepunch-man"
+    options[:name] = "one-punch-man"
+    options[:directory] = "/tmp/manga-downloadr/one-punch-man"
+    options[:test] = true
+  end
 
   opts.on("-u URL", "--url URL",
     "Full MangaReader.net manga homepage URL - required") do |v|
@@ -54,6 +61,8 @@ unless generator.state?(:images)
   puts "\nMassive parallel download of all page images "
   generator.fetch_images!
 end
-puts "\nCompiling all images into PDF volumes "
-generator.compile_ebooks!
+unless options[:test]
+  puts "\nCompiling all images into PDF volumes "
+  generator.compile_ebooks!
+end
 puts "\nProcess finished."

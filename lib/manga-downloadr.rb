@@ -28,6 +28,7 @@ module MangaDownloadr
     attr_accessor :manga_title, :pages_per_volume, :page_size
     attr_accessor :processing_state
     attr_accessor :fetch_page_urls_errors, :fetch_image_urls_errors, :fetch_images_errors
+    attr_accessor :is_test
 
     def initialize(root_url = nil, manga_name = nil, manga_root = nil, options = {})
       root_url or raise ArgumentError.new("URL is required")
@@ -39,7 +40,7 @@ module MangaDownloadr
       self.manga_root_folder = File.join(manga_root, manga_name)
       self.manga_name        = manga_name
 
-      self.hydra_concurrency = options[:hydra_concurrency] || 100
+      self.hydra_concurrency = options[:hydra_concurrency] || 30
 
       self.chapter_pages    = {}
       self.chapter_images   = {}
@@ -70,11 +71,9 @@ module MangaDownloadr
           request.on_complete do |response|
             begin
               chapter_doc = Nokogiri::HTML(response.body)
-              # pages = chapter_doc.css('#selectpage #pageMenu option')
               pages = chapter_doc.xpath("//div[@id='selectpage']//select[@id='pageMenu']//option")
               chapter_pages.merge!(chapter_link => pages.map { |p| p['value'] })
-              puts chapter_link
-              # print '.'
+              print '.'
             rescue => e
               self.fetch_page_urls_errors << { url: chapter_link, error: e, body: response.body }
               print 'x'
@@ -144,16 +143,18 @@ module MangaDownloadr
                 FileUtils.mkdir_p(File.join(manga_root_folder, file.folder))
                 File.open(downloaded_filename, "wb+") { |f| f.write response.body }
 
-                # resize
-                image = Magick::Image.read( downloaded_filename ).first
-                resized = image.resize_to_fit(600, 800)
-                resized.write( downloaded_filename ) { self.quality = 50 }
+                unless is_test
+                  # resize
+                  image = Magick::Image.read( downloaded_filename ).first
+                  resized = image.resize_to_fit(600, 800)
+                  resized.write( downloaded_filename ) { self.quality = 50 }
+                  GC.start # to avoid a leak too big (ImageMagick is notorious for that, specially on resizes)
+                end
 
                 print '.'
-                GC.start # to avoid a leak too big (ImageMagick is notorious for that, specially on resizes)
               rescue => e
                 self.fetch_images_errors << { url: file.url, error: e }
-                print '.'
+                print '#'
               end
             end
           hydra.queue request
