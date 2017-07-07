@@ -6,6 +6,7 @@ module MangaDownloadr
       @domain = domain
       @cache_http = cache_http
       @http_client = Net::HTTP.new(@domain)
+      @http_client.read_timeout = 5
     end
 
     def get(uri, &block)
