@@ -3,7 +3,6 @@ require File.expand_path("../lib/manga-downloadr/version", __FILE__)
 Gem::Specification.new do |gem|
   gem.name    = 'manga-downloadr'
   gem.version = MangaDownloadr::VERSION
-  gem.date    = Date.today.to_s
   gem.licenses = ['MIT']
 
   gem.summary = "downloads and compile to a Kindle optimized manga in PDF"
@@ -15,7 +14,6 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency('nokogiri', '~> 1.6')
   gem.add_dependency('typhoeus', '~> 1.1')
-  gem.add_dependency('rmagick', '~> 2.13')
   gem.add_dependency('prawn', '~> 1.3')
   gem.add_dependency('fastimage', '~> 1.6')
 

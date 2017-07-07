@@ -4,7 +4,6 @@ require 'bundler/setup'
 require 'nokogiri'
 require 'typhoeus'
 require 'fileutils'
-require 'rmagick'
 require 'prawn'
 require 'fastimage'
 require 'open-uri'
@@ -40,7 +39,7 @@ module MangaDownloadr
       self.manga_root_folder = File.join(manga_root, manga_name)
       self.manga_name        = manga_name
 
-      self.hydra_concurrency = options[:hydra_concurrency] || 30
+      self.hydra_concurrency = options[:hydra_concurrency] || 50
 
       self.chapter_pages    = {}
       self.chapter_images   = {}
