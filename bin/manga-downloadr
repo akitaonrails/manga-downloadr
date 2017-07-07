@@ -9,7 +9,7 @@ option_parser = OptionParser.new do |opts|
   opts.on("-t", "--test", "Test routine") do |t|
     options[:url] = "http://www.mangareader.net/onepunch-man"
     options[:name] = "one-punch-man"
-    options[:directory] = "/tmp/manga-downloadr/one-punch-man"
+    options[:directory] = "/tmp/old-manga-downloadr/one-punch-man"
     options[:test] = true
   end
 

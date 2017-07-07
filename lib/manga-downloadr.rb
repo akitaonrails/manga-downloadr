@@ -66,7 +66,7 @@ module MangaDownloadr
       hydra = Typhoeus::Hydra.new(max_concurrency: hydra_concurrency)
       chapter_list.each do |chapter_link|
         begin
-          request = Typhoeus::Request.new "http://www.mangareader.net#{chapter_link}"
+          request = Typhoeus::Request.new "http://www.mangareader.net#{chapter_link}", connecttimeout: 5, timeout: 5
           request.on_complete do |response|
             begin
               chapter_doc = Nokogiri::HTML(response.body)
@@ -98,7 +98,7 @@ module MangaDownloadr
       chapter_list.each do |chapter_key|
         chapter_pages[chapter_key].each do |page_link|
           begin
-            request = Typhoeus::Request.new "http://www.mangareader.net#{page_link}"
+            request = Typhoeus::Request.new "http://www.mangareader.net#{page_link}", connecttimeout: 5, timeout: 5
             request.on_complete do |response|
               begin
                 chapter_doc = Nokogiri::HTML(response.body)
@@ -135,7 +135,7 @@ module MangaDownloadr
         chapter_images[chapter_key].each do |file|
             downloaded_filename = File.join(manga_root_folder, file.folder, file.filename)
             next if File.exists?(downloaded_filename) # effectively resumes the download list without re-downloading everything
-            request = Typhoeus::Request.new file.url
+            request = Typhoeus::Request.new file.url, connecttimeout: 5, timeout: 5
             request.on_complete do |response|
               begin
                 # download
