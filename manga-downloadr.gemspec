@@ -3,7 +3,6 @@ require File.expand_path("../lib/manga-downloadr/version", __FILE__)
 Gem::Specification.new do |gem|
   gem.name    = "manga-downloadr"
   gem.version = MangaDownloadr::VERSION
-  gem.date    = Date.today.to_s
   gem.licenses = ["MIT"]
 
   gem.summary = "downloads and compile to a Kindle optimized manga in PDF"
